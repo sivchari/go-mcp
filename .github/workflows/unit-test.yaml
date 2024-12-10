@@ -1,0 +1,30 @@
+name: 🕵️‍♀️ Unit Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+    
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ${{ github.workspace }}/bin
+
+      - name: run unit test
+        run: go test -shuffle on -race ./...

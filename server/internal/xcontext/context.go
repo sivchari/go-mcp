@@ -1,6 +1,8 @@
 package xcontext
 
-import "context"
+import (
+	"context"
+)
 
 type idKey struct{}
 

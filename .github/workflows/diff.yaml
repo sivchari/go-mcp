@@ -1,4 +1,5 @@
-name: 🤖 CI
+name: 🤖 Check Difference
+
 on:
   pull_request:
   push:
@@ -6,7 +7,7 @@ on:
       - main
 
 jobs:
-  generated-diff:
+  files:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -34,3 +35,29 @@ jobs:
           git add --intent-to-add apis
           git diff --exit-code apis
 
+  gomod:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+    
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ${{ github.workspace }}/bin
+
+      - name: run go mod tidy
+        run: go mod tidy
+
+      - name: check diff
+        run: |
+          git add --intent-to-add go.mod go.sum
+          git diff --exit-code go.mod go.sum

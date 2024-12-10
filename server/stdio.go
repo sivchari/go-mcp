@@ -7,6 +7,9 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+
+	"github.com/sivchari/go-mcp/server/internal"
+	"github.com/sivchari/go-mcp/server/internal/xcontext"
 )
 
 func NewStdioServer(ctx context.Context, server *Server) (context.Context, *StdioServer) {
@@ -22,6 +25,12 @@ type StdioServer struct {
 	cancelFunc context.CancelFunc
 }
 
+type Response struct {
+	JSONRPC string      `json:"jsonrpc"`
+	ID      int         `json:"id"`
+	Result  interface{} `json:"result"`
+}
+
 func (s *StdioServer) Start(ctx context.Context) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -35,14 +44,23 @@ func (s *StdioServer) Start(ctx context.Context) {
 			txt := scanner.Text()
 			var msg json.RawMessage
 			if err := json.Unmarshal([]byte(txt), &msg); err != nil {
-				s.Server.logger.Error("failed to unmarshal request", slog.String("err", err.Error()))
+				s.Server.logger.Error("failed to unmarshal requesttttttttttt",
+					slog.String("err", err.Error()),
+				)
 			}
-			resp := s.Server.Handle(ctx, msg)
-			if resp == nil {
+			ctx, result := s.Server.Handle(ctx, msg)
+			if ctx == nil || result == nil {
 				continue
 			}
+			resp := Response{
+				JSONRPC: internal.JSONRPCVersion,
+				ID:      xcontext.ID(ctx),
+				Result:  result,
+			}
 			if err := json.NewEncoder(os.Stdout).Encode(resp); err != nil {
-				s.Server.logger.Error("failed to marshal response", slog.String("err", err.Error()))
+				s.Server.logger.Error("failed to marshal response",
+					slog.String("err", err.Error()),
+				)
 			}
 		}
 	}

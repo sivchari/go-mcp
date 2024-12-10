@@ -10,6 +10,8 @@ const (
 )
 
 const (
-	MethodInitialize = "initialize"
-	MethodPing       = "ping"
+	MethodInitialize               = "initialize"
+	MethodNotificationsInitialized = "notifications/initialized"
+	MethodPing                     = "ping"
+	MethodListPrompts              = "prompts/list"
 )
