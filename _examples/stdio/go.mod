@@ -1,4 +1,4 @@
-module ping
+module mcp-stdin
 
 go 1.23
 
