@@ -11,48 +11,47 @@ import (
 	"github.com/sivchari/go-mcp/server/internal"
 )
 
-func (s *Server) Prompts(ctx context.Context, msg json.RawMessage) json.Unmarshaler {
-	var req apis.ListPromptsRequest
+func (s *Server) Tools(ctx context.Context, msg json.RawMessage) json.Unmarshaler {
+	var req apis.ListToolsRequest
 	if err := json.Unmarshal(msg, &req); err != nil {
 		s.logger.Error("failed to unmarshal request",
-			slog.String("method", internal.MethodListPrompts),
+			slog.String("method", internal.MethodListTools),
 			slog.String("err", err.Error()),
 		)
 		return Error(ctx, internal.CodeInvalidParams, err)
 	}
 	nextCursor := s.nextCursor(req.Params.Cursor)
-	prompts := s.cursorPrompts(req.Params.Cursor)
-	if prompts == nil {
+	tools := s.cursorTools(req.Params.Cursor)
+	if tools == nil {
 		if req.Params.Cursor != nil {
 			s.logger.Error("invalid cursor",
 				slog.String("cursor", *req.Params.Cursor),
-				slog.String("method", internal.MethodListPrompts),
+				slog.String("method", internal.MethodListTools),
 			)
 			return Error(ctx, internal.CodeInvalidParams, nil)
 		}
-		return &apis.ListPromptsResult{}
+		return &apis.ListToolsResult{}
 	}
-	return &apis.ListPromptsResult{
-		Prompts:    prompts,
+	return &apis.ListToolsResult{
+		Tools:      tools,
 		NextCursor: nextCursor,
 	}
 }
 
-func (s *Server) Prompt(ctx context.Context, msg json.RawMessage) json.Unmarshaler {
-	// TODO: Missing required arguments: -32602 (Invalid params)
-	var req apis.GetPromptRequest
+func (s *Server) Call(ctx context.Context, msg json.RawMessage) json.Unmarshaler {
+	var req apis.CallToolRequest
 	if err := json.Unmarshal(msg, &req); err != nil {
 		s.logger.Error("failed to unmarshal request",
-			slog.String("method", internal.MethodGetPrompt),
+			slog.String("method", internal.MethodCallTool),
 			slog.String("err", err.Error()),
 		)
 		return Error(ctx, internal.CodeInvalidParams, err)
 	}
-	fn, ok := s.prompts.funcs[req.Params.Name]
+	fn, ok := s.tools.funcs[req.Params.Name]
 	if !ok {
-		s.logger.Error("prompt not found",
+		s.logger.Error("tool not found",
 			slog.String("name", req.Params.Name),
-			slog.String("method", internal.MethodGetPrompt),
+			slog.String("method", internal.MethodCallTool),
 		)
 		return Error(ctx, internal.CodeInvalidParams, nil)
 	}
@@ -60,12 +59,12 @@ func (s *Server) Prompt(ctx context.Context, msg json.RawMessage) json.Unmarshal
 	return &response
 }
 
-func (s *Server) cursorPrompts(cursor *string) []apis.Prompt {
-	if len(s.prompts.lists) == 0 {
+func (s *Server) cursorTools(cursor *string) []apis.Tool {
+	if len(s.tools.lists) == 0 {
 		return nil
 	}
 	if cursor == nil || *cursor == "" {
-		return slices.Collect(maps.Values(s.prompts.lists))[0]
+		return s.tools.lists[slices.Sorted(maps.Keys(s.tools.lists))[0]]
 	}
-	return s.prompts.lists[*cursor]
+	return s.tools.lists[*cursor]
 }

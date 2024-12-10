@@ -8,7 +8,7 @@ import (
 )
 
 func Error(ctx context.Context, code int, err error) *apis.JSONRPCErrorError {
-	if err == nil {
+	if err == nil || code == 0 {
 		return nil
 	}
 	return &apis.JSONRPCErrorError{

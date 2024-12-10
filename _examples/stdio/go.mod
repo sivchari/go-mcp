@@ -1,4 +1,4 @@
-module mcp-stdin
+module mcp-stdio
 
 go 1.23
 

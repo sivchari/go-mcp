@@ -15,4 +15,6 @@ const (
 	MethodPing                     = "ping"
 	MethodGetPrompt                = "prompts/get"
 	MethodListPrompts              = "prompts/list"
+	MethodListTools                = "tools/list"
+	MethodCallTool                 = "tools/call"
 )

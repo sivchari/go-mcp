@@ -18,11 +18,17 @@ type Server struct {
 	capabilities *apis.ServerCapabilities
 	instructions *string
 	prompts      prompts
+	tools        tools
 }
 
 type prompts struct {
 	lists map[string][]apis.Prompt
 	funcs map[string]PromptFunc
+}
+
+type tools struct {
+	lists map[string][]apis.Tool
+	funcs map[string]ToolFunc
 }
 
 func NewServer(name, version string) Builder {
@@ -37,6 +43,7 @@ type Builder interface {
 	Capabilities(capabilities *apis.ServerCapabilities) Builder
 	Instructions(instructions string) Builder
 	Prompt(prompt *apis.Prompt, fn PromptFunc) Builder
+	Tool(tool *apis.Tool, fn ToolFunc) Builder
 	PageSize(pageSize int) Builder
 }
 
@@ -49,7 +56,9 @@ type parameter struct {
 	capabilities *apis.ServerCapabilities
 	instructions string
 	prompts      []apis.Prompt
-	funcs        map[string]PromptFunc
+	promptFuncs  map[string]PromptFunc
+	tools        []apis.Tool
+	toolsFuncs   map[string]ToolFunc
 	pageSize     int
 }
 
@@ -58,14 +67,23 @@ func (p *parameter) Build() *Server {
 	if p.pageSize == 0 {
 		p.pageSize = 10
 	}
-	lists := make(map[string][]apis.Prompt)
+	promptLists := make(map[string][]apis.Prompt)
 	for _, prompt := range slices.Collect(slices.Chunk(p.prompts, p.pageSize)) {
 		uid := uuid.New().String()
-		lists[uid] = prompt
+		promptLists[uid] = prompt
 	}
 	prompts := prompts{
-		lists: lists,
-		funcs: p.funcs,
+		lists: promptLists,
+		funcs: p.promptFuncs,
+	}
+	toolLists := make(map[string][]apis.Tool)
+	for _, tool := range slices.Collect(slices.Chunk(p.tools, p.pageSize)) {
+		uid := uuid.New().String()
+		toolLists[uid] = tool
+	}
+	tools := tools{
+		lists: toolLists,
+		funcs: p.toolsFuncs,
 	}
 	return &Server{
 		name:         p.name,
@@ -74,6 +92,7 @@ func (p *parameter) Build() *Server {
 		capabilities: p.capabilities,
 		instructions: &p.instructions,
 		prompts:      prompts,
+		tools:        tools,
 	}
 }
 
@@ -87,6 +106,9 @@ func (p *parameter) Instructions(instructions string) Builder {
 	return p
 }
 
+// PromptFunc is a function that returns a prompt result.
+//
+// You should return messages that all required arguments are filled.
 type PromptFunc func(msg apis.GetPromptRequest) apis.GetPromptResult
 
 func (p *parameter) Prompt(prompt *apis.Prompt, fn PromptFunc) Builder {
@@ -94,10 +116,27 @@ func (p *parameter) Prompt(prompt *apis.Prompt, fn PromptFunc) Builder {
 		return p
 	}
 	p.prompts = append(p.prompts, *prompt)
-	if p.funcs == nil {
-		p.funcs = make(map[string]PromptFunc)
+	if p.promptFuncs == nil {
+		p.promptFuncs = make(map[string]PromptFunc)
 	}
-	p.funcs[prompt.Name] = fn
+	p.promptFuncs[prompt.Name] = fn
+	return p
+}
+
+// ToolFunc is a function that returns a tool result.
+//
+// You should return messages that all required arguments are filled.
+type ToolFunc func(msg apis.CallToolRequest) apis.CallToolResult
+
+func (p *parameter) Tool(tool *apis.Tool, fn ToolFunc) Builder {
+	if tool == nil {
+		return p
+	}
+	p.tools = append(p.tools, *tool)
+	if p.toolsFuncs == nil {
+		p.toolsFuncs = make(map[string]ToolFunc)
+	}
+	p.toolsFuncs[tool.Name] = fn
 	return p
 }
 

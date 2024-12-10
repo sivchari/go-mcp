@@ -31,6 +31,10 @@ func (s *Server) Handle(ctx context.Context, msg json.RawMessage) (context.Conte
 		return methodctx, s.Prompt(methodctx, msg)
 	case internal.MethodListPrompts:
 		return methodctx, s.Prompts(methodctx, msg)
+	case internal.MethodListTools:
+		return methodctx, s.Tools(methodctx, msg)
+	case internal.MethodCallTool:
+		return methodctx, s.Call(methodctx, msg)
 	default:
 		// not implemented yet
 		s.logger.Error("method not implemented", slog.String("method", req.Method))
