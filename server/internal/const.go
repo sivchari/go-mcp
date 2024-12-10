@@ -13,5 +13,6 @@ const (
 	MethodInitialize               = "initialize"
 	MethodNotificationsInitialized = "notifications/initialized"
 	MethodPing                     = "ping"
+	MethodGetPrompt                = "prompts/get"
 	MethodListPrompts              = "prompts/list"
 )

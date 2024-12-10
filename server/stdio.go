@@ -44,7 +44,7 @@ func (s *StdioServer) Start(ctx context.Context) {
 			txt := scanner.Text()
 			var msg json.RawMessage
 			if err := json.Unmarshal([]byte(txt), &msg); err != nil {
-				s.Server.logger.Error("failed to unmarshal requesttttttttttt",
+				s.Server.logger.Error("failed to unmarshal request",
 					slog.String("err", err.Error()),
 				)
 			}
