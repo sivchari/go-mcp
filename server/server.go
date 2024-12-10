@@ -17,7 +17,12 @@ type Server struct {
 
 	capabilities *apis.ServerCapabilities
 	instructions *string
-	prompts      map[string][]apis.Prompt
+	prompts      prompts
+}
+
+type prompts struct {
+	lists map[string][]apis.Prompt
+	funcs map[string]PromptFunc
 }
 
 func NewServer(name, version string) Builder {
@@ -31,7 +36,7 @@ type Builder interface {
 	Build() *Server
 	Capabilities(capabilities *apis.ServerCapabilities) Builder
 	Instructions(instructions string) Builder
-	Prompt(prompt *apis.Prompt) Builder
+	Prompt(prompt *apis.Prompt, fn PromptFunc) Builder
 	PageSize(pageSize int) Builder
 }
 
@@ -44,6 +49,7 @@ type parameter struct {
 	capabilities *apis.ServerCapabilities
 	instructions string
 	prompts      []apis.Prompt
+	funcs        map[string]PromptFunc
 	pageSize     int
 }
 
@@ -52,10 +58,14 @@ func (p *parameter) Build() *Server {
 	if p.pageSize == 0 {
 		p.pageSize = 10
 	}
-	prompts := make(map[string][]apis.Prompt)
+	lists := make(map[string][]apis.Prompt)
 	for _, prompt := range slices.Collect(slices.Chunk(p.prompts, p.pageSize)) {
 		uid := uuid.New().String()
-		prompts[uid] = prompt
+		lists[uid] = prompt
+	}
+	prompts := prompts{
+		lists: lists,
+		funcs: p.funcs,
 	}
 	return &Server{
 		name:         p.name,
@@ -77,11 +87,17 @@ func (p *parameter) Instructions(instructions string) Builder {
 	return p
 }
 
-func (p *parameter) Prompt(prompt *apis.Prompt) Builder {
+type PromptFunc func(msg apis.GetPromptRequest) apis.GetPromptResult
+
+func (p *parameter) Prompt(prompt *apis.Prompt, fn PromptFunc) Builder {
 	if prompt == nil {
 		return p
 	}
 	p.prompts = append(p.prompts, *prompt)
+	if p.funcs == nil {
+		p.funcs = make(map[string]PromptFunc)
+	}
+	p.funcs[prompt.Name] = fn
 	return p
 }
 

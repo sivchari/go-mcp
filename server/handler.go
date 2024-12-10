@@ -27,6 +27,8 @@ func (s *Server) Handle(ctx context.Context, msg json.RawMessage) (context.Conte
 		return methodctx, s.Ping(methodctx, msg)
 	case internal.MethodInitialize:
 		return methodctx, s.Initialize(methodctx, msg)
+	case internal.MethodGetPrompt:
+		return methodctx, s.Prompt(methodctx, msg)
 	case internal.MethodListPrompts:
 		return methodctx, s.Prompts(methodctx, msg)
 	default:

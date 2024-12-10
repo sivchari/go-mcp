@@ -57,10 +57,12 @@ func Test_nextCursor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			s := &Server{
-				prompts: map[string][]apis.Prompt{
-					"1": {},
-					"2": {},
-					"3": {},
+				prompts: prompts{
+					lists: map[string][]apis.Prompt{
+						"1": {},
+						"2": {},
+						"3": {},
+					},
 				},
 			}
 			got := s.nextCursor(tt.args.cursor)
