@@ -1,0 +1,36 @@
+name: 🤖 CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  generated-diff:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+    
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ${{ github.workspace }}/bin
+
+      - name: download go-jsonschema
+        run: make go-jsonschema
+
+      - name: check diff
+        run: |
+          make generate
+          git add --intent-to-add apis
+          git diff --exit-code apis
+
