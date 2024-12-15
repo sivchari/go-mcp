@@ -6,23 +6,19 @@ import (
 	"encoding/json"
 	"log/slog"
 	"os"
-	"os/signal"
 
 	"github.com/sivchari/go-mcp/server/internal"
 	"github.com/sivchari/go-mcp/server/internal/xcontext"
 )
 
-func NewStdioServer(ctx context.Context, server *Server) (context.Context, *StdioServer) {
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
-	return ctx, &StdioServer{
-		Server:     server,
-		cancelFunc: cancel,
+func NewStdioServer(server *Server) *StdioServer {
+	return &StdioServer{
+		Server: server,
 	}
 }
 
 type StdioServer struct {
-	Server     *Server
-	cancelFunc context.CancelFunc
+	Server *Server
 }
 
 type Response struct {
