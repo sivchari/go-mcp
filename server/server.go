@@ -112,7 +112,7 @@ func (p *parameter) Instructions(instructions string) Builder {
 type PromptFunc func(msg apis.GetPromptRequest) apis.GetPromptResult
 
 func (p *parameter) Prompt(prompt *apis.Prompt, fn PromptFunc) Builder {
-	if prompt == nil {
+	if prompt == nil || fn == nil {
 		return p
 	}
 	p.prompts = append(p.prompts, *prompt)
@@ -129,7 +129,7 @@ func (p *parameter) Prompt(prompt *apis.Prompt, fn PromptFunc) Builder {
 type ToolFunc func(msg apis.CallToolRequest) apis.CallToolResult
 
 func (p *parameter) Tool(tool *apis.Tool, fn ToolFunc) Builder {
-	if tool == nil {
+	if tool == nil || fn == nil {
 		return p
 	}
 	p.tools = append(p.tools, *tool)

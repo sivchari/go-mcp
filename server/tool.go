@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"maps"
-	"slices"
 
 	"github.com/sivchari/go-mcp/apis"
 	"github.com/sivchari/go-mcp/server/internal"
@@ -57,14 +55,4 @@ func (s *Server) Call(ctx context.Context, msg json.RawMessage) json.Unmarshaler
 	}
 	response := fn(req)
 	return &response
-}
-
-func (s *Server) cursorTools(cursor *string) []apis.Tool {
-	if len(s.tools.lists) == 0 {
-		return nil
-	}
-	if cursor == nil || *cursor == "" {
-		return s.tools.lists[slices.Sorted(maps.Keys(s.tools.lists))[0]]
-	}
-	return s.tools.lists[*cursor]
 }
