@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"maps"
-	"slices"
 
 	"github.com/sivchari/go-mcp/apis"
 	"github.com/sivchari/go-mcp/server/internal"
@@ -58,14 +56,4 @@ func (s *Server) Prompt(ctx context.Context, msg json.RawMessage) json.Unmarshal
 	}
 	response := fn(req)
 	return &response
-}
-
-func (s *Server) cursorPrompts(cursor *string) []apis.Prompt {
-	if len(s.prompts.lists) == 0 {
-		return nil
-	}
-	if cursor == nil || *cursor == "" {
-		return slices.Collect(maps.Values(s.prompts.lists))[0]
-	}
-	return s.prompts.lists[*cursor]
 }

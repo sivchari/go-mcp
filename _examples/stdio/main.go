@@ -3,70 +3,72 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
 
+	"github.com/sivchari/go-mcp"
 	"github.com/sivchari/go-mcp/apis"
 	"github.com/sivchari/go-mcp/server"
 )
 
-func to[T any](x T) *T {
-	return &x
-}
-
 func main() {
 	prompt := apis.Prompt{
 		Name:        "hello",
-		Description: to("hello world"),
+		Description: mcp.Ptr("hello world"),
 		Arguments: []apis.PromptArgument{
 			{
 				Name:        "name",
-				Description: to("your name"),
-				Required:    to(false),
+				Description: mcp.Ptr("your name"),
+				Required:    mcp.Ptr(false),
 			},
 		},
 	}
 	promptFunc := func(msg apis.GetPromptRequest) apis.GetPromptResult {
 		return apis.GetPromptResult{
-			Description: to("Hello MCP"),
+			Description: mcp.Ptr("Hello MCP"),
 			Messages: []apis.PromptMessage{
 				{
-					Role: apis.Role("user"),
-					Content: map[string]any{
-						"type": "text",
-						"text": fmt.Sprintf("Please respond with your name: %s", msg.Params.Arguments["name"]),
-					},
+					Role:    apis.RoleUser,
+					Content: mcp.NewTextContent("Please respond with your name"),
+				},
+				{
+					Role: apis.RoleAssistant,
+					Content: mcp.NewResource(apis.TextResourceContents{
+						Text:     "Hello, what is your name?",
+						Uri:      "file://your-name.txt",
+						MimeType: mcp.Ptr("text/plain"),
+					}),
 				},
 			},
 		}
 	}
+
 	tool := apis.Tool{
 		Name:        "hello",
-		Description: to("hello world"),
-		InputSchema: apis.ToolInputSchema{
-			Type: "object",
-			Properties: map[string]map[string]any{
-				"name": {
-					"type":        "string",
-					"description": "your name",
-				},
-			},
-			Required: []string{"name"},
-		},
+		Description: mcp.Ptr("hello world"),
+		InputSchema: *mcp.NewToolInput().
+			WithString("name").
+			WithNumber("age").
+			WithRequired("name", "age").
+			Build(),
 	}
 	toolFunc := func(msg apis.CallToolRequest) apis.CallToolResult {
 		return apis.CallToolResult{
 			Content: []any{
-				map[string]any{
-					"type": "text",
-					"text": fmt.Sprintf("Hello, %s!", msg.Params.Arguments["name"]),
-				},
+				mcp.NewTextContent(fmt.Sprintf("Hello %s, you are %d years old", msg.Params.Arguments["name"], msg.Params.Arguments["age"])),
 			},
-			IsError: to(false),
+			IsError: mcp.Ptr(false),
 		}
 	}
+
 	srv := server.NewServer("stdio", "1.0.0").
 		Prompt(&prompt, promptFunc).
 		Tool(&tool, toolFunc).
 		Build()
-	ctx, stdio := server.NewStdioServer(context.Background(), srv)
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer cancel()
+	stdio := server.NewStdioServer(srv)
 	stdio.Start(ctx)
+	<-ctx.Done()
 }
