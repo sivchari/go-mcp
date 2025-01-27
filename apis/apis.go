@@ -2311,6 +2311,13 @@ type Resource struct {
 	// This can be used by clients to populate UI elements.
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
 
+	// The size of the raw resource content, in bytes (i.e., before base64 encoding or
+	// any tokenization), if known.
+	//
+	// This can be used by Hosts to display file sizes and estimate context window
+	// usage.
+	Size *int `json:"size,omitempty" yaml:"size,omitempty" mapstructure:"size,omitempty"`
+
 	// The URI of this resource.
 	Uri string `json:"uri" yaml:"uri" mapstructure:"uri"`
 }
