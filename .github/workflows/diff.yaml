@@ -32,8 +32,8 @@ jobs:
       - name: check diff
         run: |
           make generate
-          git add --intent-to-add apis
-          git diff --exit-code apis
+          git add --intent-to-add internal
+          git diff --exit-code internal
 
   gomod:
     runs-on: ubuntu-24.04

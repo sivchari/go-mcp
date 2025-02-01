@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/sivchari/go-mcp/apis"
+	"github.com/sivchari/go-mcp/internal/apis"
 	"github.com/sivchari/go-mcp/server/internal/xcontext"
 )
 

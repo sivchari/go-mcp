@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/sivchari/go-mcp/apis"
+	"github.com/sivchari/go-mcp/internal/apis"
 )
 
 type Server struct {

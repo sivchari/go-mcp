@@ -4,7 +4,7 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/sivchari/go-mcp/apis"
+	"github.com/sivchari/go-mcp/internal/apis"
 )
 
 func (s *Server) nextCursor(cursor *string) *string {
