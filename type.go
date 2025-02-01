@@ -1,6 +1,10 @@
 package mcp
 
-import "github.com/sivchari/go-mcp/apis"
+import "github.com/sivchari/go-mcp/internal/apis"
+
+type TextResourceContents = apis.TextResourceContents
+
+type BlobResourceContents = apis.BlobResourceContents
 
 type TextContent apis.TextContent
 
@@ -11,7 +15,9 @@ func NewTextContent(text string) TextContent {
 	}
 }
 
-func (t *TextContent) WithAnnotations(annotation *apis.TextContentAnnotations) {
+type TextContentAnnotations = apis.TextContentAnnotations
+
+func (t *TextContent) WithAnnotations(annotation *TextContentAnnotations) {
 	t.Annotations = annotation
 }
 
@@ -25,14 +31,16 @@ func NewImageContent(encodedData, mimeType string) ImageContent {
 	}
 }
 
-func (i *ImageContent) WithAnnotations(annotation *apis.ImageContentAnnotations) {
+type ImageContentAnnotations = apis.ImageContentAnnotations
+
+func (i *ImageContent) WithAnnotations(annotation *ImageContentAnnotations) {
 	i.Annotations = annotation
 }
 
 type Resource apis.EmbeddedResource
 
 func NewResource[T interface {
-	apis.TextResourceContents | apis.BlobResourceContents
+	TextResourceContents | BlobResourceContents
 }](resource T) Resource {
 	return Resource{
 		Type:     "resource",
@@ -40,7 +48,9 @@ func NewResource[T interface {
 	}
 }
 
-func (e *Resource) WithAnnotations(annotation *apis.EmbeddedResourceAnnotations) {
+type EmbeddedResourceAnnotations = apis.EmbeddedResourceAnnotations
+
+func (e *Resource) WithAnnotations(annotation *EmbeddedResourceAnnotations) {
 	e.Annotations = annotation
 }
 
@@ -101,10 +111,33 @@ func (t *ToolInput) WithRequired(names ...string) *ToolInput {
 	return t
 }
 
-func (t *ToolInput) Build() *apis.ToolInputSchema {
+type ToolInputSchema = apis.ToolInputSchema
+
+func (t *ToolInput) Build() *ToolInputSchema {
 	return &apis.ToolInputSchema{
 		Type:       "object",
 		Properties: t.Properties,
 		Required:   t.Required,
 	}
 }
+
+type Prompt = apis.Prompt
+
+type PromptArgument = apis.PromptArgument
+
+type GetPromptRequest = apis.GetPromptRequest
+
+type GetPromptResult = apis.GetPromptResult
+
+type PromptMessage = apis.PromptMessage
+
+const (
+	RoleAssistant apis.Role = "assistant"
+	RoleUser      apis.Role = "user"
+)
+
+type Tool = apis.Tool
+
+type CallToolRequest = apis.CallToolRequest
+
+type CallToolResult = apis.CallToolResult

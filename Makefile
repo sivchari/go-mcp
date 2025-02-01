@@ -6,5 +6,5 @@ go-jsonschema:
 
 .PHONY: generate
 generate: go-jsonschema
-	$(PROJECT_DIR)/bin/go-jsonschema -p apis $(PROJECT_DIR)/specification/schema/2024-11-05/schema.json -o apis/apis.go
+	$(PROJECT_DIR)/bin/go-jsonschema -p apis $(PROJECT_DIR)/specification/schema/2024-11-05/schema.json -o internal/apis/apis.go
 

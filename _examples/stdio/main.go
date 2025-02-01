@@ -7,15 +7,14 @@ import (
 	"os/signal"
 
 	"github.com/sivchari/go-mcp"
-	"github.com/sivchari/go-mcp/apis"
 	"github.com/sivchari/go-mcp/server"
 )
 
 func main() {
-	prompt := apis.Prompt{
+	prompt := mcp.Prompt{
 		Name:        "hello",
 		Description: mcp.Ptr("hello world"),
-		Arguments: []apis.PromptArgument{
+		Arguments: []mcp.PromptArgument{
 			{
 				Name:        "name",
 				Description: mcp.Ptr("your name"),
@@ -23,17 +22,17 @@ func main() {
 			},
 		},
 	}
-	promptFunc := func(msg apis.GetPromptRequest) apis.GetPromptResult {
-		return apis.GetPromptResult{
+	promptFunc := func(msg mcp.GetPromptRequest) mcp.GetPromptResult {
+		return mcp.GetPromptResult{
 			Description: mcp.Ptr("Hello MCP"),
-			Messages: []apis.PromptMessage{
+			Messages: []mcp.PromptMessage{
 				{
-					Role:    apis.RoleUser,
+					Role:    mcp.RoleUser,
 					Content: mcp.NewTextContent("Please respond with your name"),
 				},
 				{
-					Role: apis.RoleAssistant,
-					Content: mcp.NewResource(apis.TextResourceContents{
+					Role: mcp.RoleAssistant,
+					Content: mcp.NewResource(mcp.TextResourceContents{
 						Text:     "Hello, what is your name?",
 						Uri:      "file://your-name.txt",
 						MimeType: mcp.Ptr("text/plain"),
@@ -43,7 +42,7 @@ func main() {
 		}
 	}
 
-	tool := apis.Tool{
+	tool := mcp.Tool{
 		Name:        "hello",
 		Description: mcp.Ptr("hello world"),
 		InputSchema: *mcp.NewToolInput().
@@ -52,8 +51,8 @@ func main() {
 			WithRequired("name", "age").
 			Build(),
 	}
-	toolFunc := func(msg apis.CallToolRequest) apis.CallToolResult {
-		return apis.CallToolResult{
+	toolFunc := func(msg mcp.CallToolRequest) mcp.CallToolResult {
+		return mcp.CallToolResult{
 			Content: []any{
 				mcp.NewTextContent(fmt.Sprintf("Hello %s, you are %d years old", msg.Params.Arguments["name"], msg.Params.Arguments["age"])),
 			},
